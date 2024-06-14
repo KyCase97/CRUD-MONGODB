@@ -1,11 +1,15 @@
+// routes/mahasiswa.js
+
 const express = require("express");
 const router = express.Router();
 const Mahasiswa = require("../models/mahasiswa");
-
+const bodyParser = require("body-parser");
+router.use(bodyParser.json());
 // Create a new mahasiswa
 router.post("/", async (req, res) => {
   try {
-    const mahasiswa = new Mahasiswa(req.body);
+    const { id, name, email, age, major } = req.body;
+    const mahasiswa = new Mahasiswa({ id, name, email, age, major });
     await mahasiswa.save();
     res.status(201).json(mahasiswa);
   } catch (error) {
@@ -31,13 +35,10 @@ router.get("/", async (req, res) => {
 // Get a specific mahasiswa by ID
 router.get("/:id", async (req, res) => {
   try {
-    const id = req.params.id;
-    const mahasiswa = await Mahasiswa.findOne({ id: id });
-
+    const mahasiswa = await Mahasiswa.findOne({ id: req.params.id });
     if (!mahasiswa) {
       return res.status(404).json({ error: "Mahasiswa not found" });
     }
-
     res.json(mahasiswa);
   } catch (error) {
     console.error("Error:", error);
@@ -48,8 +49,8 @@ router.get("/:id", async (req, res) => {
 // Update a mahasiswa by ID
 router.put("/:id", async (req, res) => {
   try {
-    const mahasiswa = await Mahasiswa.findByIdAndUpdate(
-      req.params.id,
+    const mahasiswa = await Mahasiswa.findOneAndUpdate(
+      { id: req.params.id },
       req.body,
       { new: true, runValidators: true }
     );
@@ -65,7 +66,7 @@ router.put("/:id", async (req, res) => {
 // Delete a mahasiswa by ID
 router.delete("/:id", async (req, res) => {
   try {
-    const mahasiswa = await Mahasiswa.findByIdAndDelete(req.params.id);
+    const mahasiswa = await Mahasiswa.findOneAndDelete({ id: req.params.id });
     if (!mahasiswa) {
       return res.status(404).json({ error: "Mahasiswa not found" });
     }
