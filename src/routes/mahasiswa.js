@@ -9,30 +9,39 @@ router.post("/", async (req, res) => {
     await mahasiswa.save();
     res.status(201).json(mahasiswa);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Error:", error);
+    if (error.code === 11000) {
+      res.status(400).json({ error: "Email already exists" });
+    } else {
+      res.status(400).json({ error: error.message });
+    }
   }
 });
 
-// Get all mahasiswa
+// Get all mahasiswas
 router.get("/", async (req, res) => {
   try {
-    const mahasiswa = await Mahasiswa.find();
-    res.status(200).json(mahasiswa);
+    const mahasiswas = await Mahasiswa.find();
+    res.status(200).json(mahasiswas);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Get a mahasiswa by ID
+// Get a specific mahasiswa by ID
 router.get("/:id", async (req, res) => {
   try {
-    const mahasiswa = await Mahasiswa.findById(req.params.id);
+    const id = req.params.id;
+    const mahasiswa = await Mahasiswa.findOne({ id: id });
+
     if (!mahasiswa) {
       return res.status(404).json({ error: "Mahasiswa not found" });
     }
-    res.status(200).json(mahasiswa);
+
+    res.json(mahasiswa);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -42,10 +51,7 @@ router.put("/:id", async (req, res) => {
     const mahasiswa = await Mahasiswa.findByIdAndUpdate(
       req.params.id,
       req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
+      { new: true, runValidators: true }
     );
     if (!mahasiswa) {
       return res.status(404).json({ error: "Mahasiswa not found" });
